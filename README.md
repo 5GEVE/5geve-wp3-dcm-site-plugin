@@ -37,3 +37,7 @@ Finally, execute the script.
 ```shell
 sudo python3 dcm_site_plugin_rest_client.py --site_ip_address localhost --port 8090 --kafka_topics_script_route /opt/kafka/bin/kafka-topics.sh --log info
 ```
+
+## Copyright
+
+This work has been done by Telcaria Ideas S.L. for the 5G EVE European project under the [Apache 2.0 License](LICENSE).
