@@ -10,6 +10,7 @@ from kafka import KafkaProducer
 from kafka.errors import KafkaError
 from kafka.future import log
 import json
+import re
 
 app = Flask(__name__)
 logger = logging.getLogger("DCMSitePluginRestClient")
@@ -93,6 +94,42 @@ def delete_topic(topic):
         logger.exception(e)
         return str(e), 500
     return '', 200
+
+@app.route('/list/<uc>', methods=['GET'])
+def extract_topics_from_uc(uc):
+    """
+    Extract topics from use case.
+    ---
+    describe: extract topics from use case.
+    parameters:
+      - in: path
+        name: uc
+        type: string
+        description: use case.
+    responses:
+      200:
+        description: successful result, together with the list of topics that contains the provided use case
+      500:
+        description: error during the execution
+    """
+    logger.info("Request received - GET /list")
+    try:
+        topics = subprocess.check_output(['/bin/bash', kafka_topics_script_route, '--list', '--zookeeper', site_ip_address+":2181"])
+        topic_list = topics.splitlines()
+        topic_list_string = [e.decode("utf-8") for e in topic_list]
+
+        regex = re.compile("^" + uc + "\.")
+        newlist = list(filter(regex.match, topic_list_string))
+
+        logger.info("Topic list: " + str(newlist))
+
+        response = json.dumps({'topics': newlist})
+
+    except Exception as e:
+        logger.error("Error executing command")
+        logger.exception(e)
+        return str(e), 500
+    return response, 200
 
 def checkValidPort(value):
     ivalue = int(value)
